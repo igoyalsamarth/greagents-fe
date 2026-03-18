@@ -1,73 +1,129 @@
-# React + TypeScript + Vite
+# GreAgents Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React application with GitHub OAuth authentication, built with Vite, TailwindCSS, and shadcn/ui.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- 🔐 GitHub OAuth authentication
+- 📝 User onboarding flow
+- 🎨 Beautiful UI with shadcn/ui components
+- 🚀 Fast development with Vite
+- 📱 Responsive design with TailwindCSS
+- 🔄 Data fetching with React Query
+- 🌐 HTTP client with ky
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **TailwindCSS** - Styling
+- **shadcn/ui** - UI components
+- **React Router** - Routing
+- **TanStack Query** - Data fetching
+- **TanStack Form** - Form management
+- **ky** - HTTP client
+- **Bun** - Package manager
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Bun installed
+- GitHub OAuth App credentials
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Setup
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Clone the repository
+
+2. Install dependencies:
+```bash
+bun install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. Create a GitHub OAuth App:
+   - Go to GitHub Settings > Developer settings > OAuth Apps
+   - Click "New OAuth App"
+   - Set Authorization callback URL to: `http://localhost:5173/auth/callback`
+   - Copy the Client ID
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+4. Configure environment variables:
+```bash
+cp .env.example .env
 ```
+
+Edit `.env` and add your GitHub Client ID:
+```
+VITE_GITHUB_CLIENT_ID=your_github_client_id_here
+VITE_GITHUB_REDIRECT_URI=http://localhost:5173/auth/callback
+VITE_API_BASE_URL=http://localhost:3000/api
+```
+
+5. Start the development server:
+```bash
+bun run dev
+```
+
+6. Open http://localhost:5173
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   ├── AppSidebar.tsx     # Main sidebar navigation
+│   └── DashboardLayout.tsx # Layout wrapper with sidebar
+├── lib/
+│   ├── api.ts             # ky HTTP client setup
+│   ├── auth.ts            # Authentication utilities
+│   └── utils.ts           # Utility functions
+├── pages/
+│   ├── Login.tsx          # Login landing page
+│   ├── AuthCallback.tsx   # GitHub OAuth callback handler
+│   ├── Onboarding.tsx     # User onboarding form
+│   ├── Home.tsx           # Dashboard home page
+│   ├── Settings.tsx       # Settings page
+│   └── agents/
+│       ├── Coder.tsx      # Coder agent page
+│       └── Reviewer.tsx   # Reviewer agent page
+├── App.tsx          # App routes and providers
+└── main.tsx         # App entry point
+```
+
+## Authentication Flow
+
+1. User clicks "Continue with GitHub" on the login page
+2. User is redirected to GitHub for authorization
+3. GitHub redirects to backend `/auth/github/callback` with a code
+4. Backend processes auth and redirects to frontend `/auth/callback` with token in query params
+5. Frontend extracts and stores token in localStorage
+6. User is redirected to `/onboarding`
+7. After completing onboarding, user is redirected to `/` (home dashboard)
+
+## Routes
+
+- `/login` - Login page (public)
+- `/auth/callback` - OAuth callback handler
+- `/onboarding` - User onboarding form (protected)
+- `/` - Home dashboard (protected)
+- `/agents/coder` - Coder agent page (protected)
+- `/agents/reviewer` - Reviewer agent page (protected)
+- `/settings` - Settings page (protected)
+
+## Available Scripts
+
+- `bun run dev` - Start development server
+- `bun run build` - Build for production
+- `bun run preview` - Preview production build
+- `bun run lint` - Run ESLint
+
+## Adding shadcn/ui Components
+
+```bash
+bunx shadcn@latest add [component-name]
+```
+
+## License
+
+MIT
