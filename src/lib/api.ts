@@ -73,3 +73,39 @@ export interface CoderAgentSettings {
   repositories: Repository[];
   configurations: CoderAgentConfig[];
 }
+
+export interface CoderUsageSummary {
+  runCount: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  totalCost: string;
+}
+
+export interface CoderUsageIssue {
+  issueNumber: number;
+  runCount: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  totalCost: string;
+  lastRunAt: string;
+}
+
+export interface CoderUsageRepository {
+  githubFullName: string;
+  /** Internal id; backend may send string or number. */
+  repositoryId: string | number;
+  distinctIssueCount: number;
+  runCount: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  totalCost: string;
+  issues: CoderUsageIssue[];
+}
+
+export interface CoderUsageResponse {
+  summary: CoderUsageSummary;
+  repositories: CoderUsageRepository[];
+}
