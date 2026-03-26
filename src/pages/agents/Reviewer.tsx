@@ -1,6 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { FileCheck, Play } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { WorkflowUsagePanel } from "@/components/WorkflowUsagePanel";
+import { FileCheck, Github } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Reviewer() {
   return (
@@ -8,7 +10,11 @@ export default function Reviewer() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Reviewer Agent</h2>
         <p className="text-muted-foreground">
-          AI-powered code review assistant for quality assurance
+          AI-powered code review on pull requests. Install the GitHub App under{" "}
+          <Link to="/connections" className="text-primary underline-offset-4 hover:underline">
+            Connections
+          </Link>{" "}
+          so the reviewer can access your repositories.
         </p>
       </div>
 
@@ -17,44 +23,28 @@ export default function Reviewer() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileCheck className="h-5 w-5" />
-              Agent Status
+              Agent status
             </CardTitle>
             <CardDescription>
-              Current state of the reviewer agent
+              The reviewer runs when triggered on pull requests in connected repos
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                <span className="text-sm text-muted-foreground">Ready</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Last Review</span>
-                <span className="text-sm text-muted-foreground">5 hours ago</span>
-              </div>
-              <Button className="w-full" size="lg">
-                <Play className="mr-2 h-4 w-4" />
-                Start Review Session
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Reviews</CardTitle>
-            <CardDescription>
-              Latest code reviews completed
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              No recent reviews to display.
-            </p>
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/connections">
+                <Github className="mr-2 h-4 w-4" />
+                Manage GitHub connection
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
+
+      <WorkflowUsagePanel
+        workflow="review"
+        queryKeyPrefix="reviewer-agent"
+        cardDescription="Runs, tokens, and cost for PR review workflows"
+      />
     </div>
   );
 }
