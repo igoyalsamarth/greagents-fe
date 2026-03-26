@@ -15,16 +15,6 @@ export const api = ky.create({
   },
 });
 
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    avatarUrl?: string;
-  };
-}
-
 export interface OnboardingData {
   organization: string;
   username: string;

@@ -31,7 +31,7 @@ export default function Connections() {
 
   const uninstallMutation = useMutation({
     mutationFn: async () => {
-      await api.delete('connections/github/installation');
+      await api.delete('connections/github');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['github-app-installation'] });
