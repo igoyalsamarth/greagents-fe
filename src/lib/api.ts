@@ -53,15 +53,18 @@ export interface Repository {
   updatedAt?: string;
 }
 
-export interface CoderAgentConfig {
+/** Stored as ``config_json.mode`` on ``RepositoryAgent`` (coder + reviewer). */
+export type RepoAgentMode = 'auto' | 'on_assignment';
+
+export interface RepositoryAgentConfig {
   repositoryId: number;
   enabled: boolean;
-  mode: 'auto' | 'on_assignment';
+  mode: RepoAgentMode;
 }
 
-export interface CoderAgentSettings {
+export interface RepositoryAgentSettings {
   repositories: Repository[];
-  configurations: CoderAgentConfig[];
+  configurations: RepositoryAgentConfig[];
 }
 
 /** Matches ``GET /agents/usage`` query and payload ``workflow`` field. */

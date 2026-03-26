@@ -27,8 +27,9 @@ import {
 } from "lucide-react";
 import {
   api,
-  type CoderAgentSettings,
-  type CoderAgentConfig,
+  type RepositoryAgentSettings,
+  type RepositoryAgentConfig,
+  type RepoAgentMode,
 } from "@/lib/api";
 import { Link } from "react-router-dom";
 import { WorkflowUsagePanel } from "@/components/WorkflowUsagePanel";
@@ -41,18 +42,18 @@ export default function Coder() {
     data: settings,
     isLoading,
     error,
-  } = useQuery<CoderAgentSettings>({
+  } = useQuery<RepositoryAgentSettings>({
     queryKey: ["coder-agent-settings"],
     queryFn: async () => {
       const response = await api
         .get("agents/coder/settings")
-        .json<CoderAgentSettings>();
+        .json<RepositoryAgentSettings>();
       return response;
     },
   });
 
   const updateConfigMutation = useMutation({
-    mutationFn: async (config: CoderAgentConfig) => {
+    mutationFn: async (config: RepositoryAgentConfig) => {
       await api.put(`agents/coder/repositories/${config.repositoryId}`, {
         json: { enabled: config.enabled, mode: config.mode },
       });
@@ -62,7 +63,7 @@ export default function Coder() {
     },
   });
 
-  const getConfig = (repositoryId: number): CoderAgentConfig => {
+  const getConfig = (repositoryId: number): RepositoryAgentConfig => {
     const existing = settings?.configurations.find(
       (c) => c.repositoryId === repositoryId,
     );
@@ -74,10 +75,7 @@ export default function Coder() {
     updateConfigMutation.mutate({ ...config, enabled });
   };
 
-  const handleModeChange = (
-    repositoryId: number,
-    mode: "auto" | "on_assignment",
-  ) => {
+  const handleModeChange = (repositoryId: number, mode: RepoAgentMode) => {
     const config = getConfig(repositoryId);
     updateConfigMutation.mutate({ ...config, mode });
   };
@@ -252,7 +250,7 @@ export default function Coder() {
                             {repo.fullName}
                           </h4>
                           {config.enabled && (
-                            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                           )}
                         </div>
                         {repo.description && (
@@ -280,12 +278,12 @@ export default function Coder() {
                       <div className="flex items-center gap-2">
                         <Select
                           value={config.mode}
-                          onValueChange={(value: "auto" | "on_assignment") =>
+                          onValueChange={(value: RepoAgentMode) =>
                             handleModeChange(repo.id, value)
                           }
                           disabled={!config.enabled || isUpdating}
                         >
-                          <SelectTrigger className="w-[140px] h-9">
+                          <SelectTrigger className="w-35 h-9">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -333,8 +331,12 @@ export default function Coder() {
           <div>
             <span className="font-semibold">Auto:</span>
             <span className="text-muted-foreground ml-2">
-              The agent will automatically respond to all new issues in the
-              repository.
+              The agent responds to new and reopened issues automatically.
+              Adding the{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                greagent:code
+              </code>{" "}
+              label always starts another run.
             </span>
           </div>
         </CardContent>

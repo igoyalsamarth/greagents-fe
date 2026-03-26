@@ -1,35 +1,43 @@
-import { useForm } from '@tanstack/react-form';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { api, type OnboardingData } from '@/lib/api';
+import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { api, type OnboardingData } from "@/lib/api";
 
 export default function Onboarding() {
   const navigate = useNavigate();
 
   const onboardingMutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
-      return api.post('onboarding', {
-        json: data,
-      }).json();
+      return api
+        .post("onboarding", {
+          json: data,
+        })
+        .json();
     },
     onSuccess: () => {
-      navigate('/');
+      navigate("/");
     },
     onError: (error) => {
-      console.error('Onboarding failed:', error);
+      console.error("Onboarding failed:", error);
     },
   });
 
   const form = useForm({
     defaultValues: {
-      organization: '',
-      username: '',
-      fullName: '',
-      bio: '',
+      organization: "",
+      username: "",
+      fullName: "",
+      bio: "",
     },
     onSubmit: async ({ value }) => {
       onboardingMutation.mutate(value);
@@ -37,7 +45,7 @@ export default function Onboarding() {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
@@ -59,7 +67,7 @@ export default function Onboarding() {
               validators={{
                 onChange: ({ value }) => {
                   if (!value || value.length < 2) {
-                    return 'Organization name must be at least 2 characters';
+                    return "Organization name must be at least 2 characters";
                   }
                   return undefined;
                 },
@@ -68,7 +76,8 @@ export default function Onboarding() {
               {(field) => (
                 <div className="space-y-2">
                   <Label htmlFor="organization">
-                    Organization Name <span className="text-destructive">*</span>
+                    Organization Name{" "}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="organization"
@@ -91,10 +100,10 @@ export default function Onboarding() {
               validators={{
                 onChange: ({ value }) => {
                   if (!value || value.length < 3) {
-                    return 'Username must be at least 3 characters';
+                    return "Username must be at least 3 characters";
                   }
                   if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-                    return 'Username can only contain letters, numbers, underscores, and hyphens';
+                    return "Username can only contain letters, numbers, underscores, and hyphens";
                   }
                   return undefined;
                 },
@@ -146,7 +155,7 @@ export default function Onboarding() {
               validators={{
                 onChange: ({ value }) => {
                   if (value && value.length > 160) {
-                    return 'Bio must be 160 characters or less';
+                    return "Bio must be 160 characters or less";
                   }
                   return undefined;
                 },
@@ -182,9 +191,13 @@ export default function Onboarding() {
                   type="submit"
                   className="w-full"
                   size="lg"
-                  disabled={!canSubmit || isSubmitting || onboardingMutation.isPending}
+                  disabled={
+                    !canSubmit || isSubmitting || onboardingMutation.isPending
+                  }
                 >
-                  {onboardingMutation.isPending ? 'Setting up...' : 'Complete Setup'}
+                  {onboardingMutation.isPending
+                    ? "Setting up..."
+                    : "Complete Setup"}
                 </Button>
               )}
             </form.Subscribe>
