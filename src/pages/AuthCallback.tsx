@@ -7,8 +7,7 @@ export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const accessToken = searchParams.get('access_token');
-    const userId = searchParams.get('user_id');
+    const sessionToken = searchParams.get('token');
     const error = searchParams.get('error');
 
     if (error) {
@@ -16,8 +15,8 @@ export default function AuthCallback() {
       return;
     }
 
-    if (accessToken && userId) {
-      setAuthToken(accessToken);
+    if (sessionToken) {
+      setAuthToken(sessionToken);
       navigate('/onboarding');
     } else {
       navigate('/?error=missing_token');

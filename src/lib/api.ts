@@ -15,16 +15,6 @@ export const api = ky.create({
   },
 });
 
-export interface AuthResponse {
-  token: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    avatarUrl?: string;
-  };
-}
-
 export interface OnboardingData {
   organization: string;
   username: string;
@@ -74,7 +64,10 @@ export interface CoderAgentSettings {
   configurations: CoderAgentConfig[];
 }
 
-export interface CoderUsageSummary {
+/** Matches ``GET /agents/usage`` query and payload ``workflow`` field. */
+export type GitHubWorkflowKind = "code" | "review";
+
+export interface WorkflowUsageSummary {
   runCount: number;
   totalInputTokens: number;
   totalOutputTokens: number;
@@ -82,30 +75,32 @@ export interface CoderUsageSummary {
   totalCost: string;
 }
 
-export interface CoderUsageIssue {
-  issueNumber: number;
+export interface WorkflowUsageItem {
+  workflow: GitHubWorkflowKind;
+  itemNumber: number;
   runCount: number;
   totalInputTokens: number;
   totalOutputTokens: number;
   totalTokens: number;
   totalCost: string;
-  lastRunAt: string;
+  lastRunAt: string | null;
 }
 
-export interface CoderUsageRepository {
+export interface WorkflowUsageRepository {
   githubFullName: string;
-  /** Internal id; backend may send string or number. */
-  repositoryId: string | number;
-  distinctIssueCount: number;
+  workflow: GitHubWorkflowKind;
+  /** Internal id; backend may omit or send string. */
+  repositoryId: string | number | null;
+  distinctItemCount: number;
   runCount: number;
   totalInputTokens: number;
   totalOutputTokens: number;
   totalTokens: number;
   totalCost: string;
-  issues: CoderUsageIssue[];
+  items: WorkflowUsageItem[];
 }
 
-export interface CoderUsageResponse {
-  summary: CoderUsageSummary;
-  repositories: CoderUsageRepository[];
+export interface WorkflowUsageResponse {
+  summary: WorkflowUsageSummary;
+  repositories: WorkflowUsageRepository[];
 }

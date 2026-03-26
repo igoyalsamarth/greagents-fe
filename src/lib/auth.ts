@@ -1,14 +1,15 @@
+/**
+ * Start OAuth via the backend so client_id/secret and scopes stay server-side.
+ * Backend redirects to GitHub, then back to /auth/github/callback and finally
+ * to the frontend with a session JWT in the `token` query param.
+ */
 export const getGitHubAuthUrl = () => {
-  const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
   const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-  
+  const redirectTo = `${window.location.origin}/auth/callback`;
   const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: `${backendUrl}/auth/github/callback`,
-    scope: 'read:user user:email',
+    redirect_to: redirectTo,
   });
-
-  return `https://github.com/login/oauth/authorize?${params.toString()}`;
+  return `${backendUrl}/auth/login?${params.toString()}`;
 };
 
 export const setAuthToken = (token: string) => {
