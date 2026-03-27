@@ -11,7 +11,7 @@ export default function AuthCallback() {
     const error = searchParams.get("error");
 
     if (error) {
-      navigate("/?error=" + error);
+      navigate("/login?error=" + encodeURIComponent(error));
       return;
     }
 
@@ -19,7 +19,7 @@ export default function AuthCallback() {
       setAuthToken(sessionToken);
       navigate("/onboarding");
     } else {
-      navigate("/?error=missing_token");
+      navigate("/login?error=" + encodeURIComponent("missing_token"));
     }
   }, [searchParams, navigate]);
 

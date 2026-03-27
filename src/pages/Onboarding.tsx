@@ -25,7 +25,7 @@ export default function Onboarding() {
         .json();
     },
     onSuccess: () => {
-      navigate("/");
+      navigate("/dashboard");
     },
     onError: (error) => {
       console.error("Onboarding failed:", error);

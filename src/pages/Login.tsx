@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,7 +11,23 @@ import {
 import { getGitHubAuthUrl } from "@/lib/auth";
 import { Github } from "lucide-react";
 
+function authErrorMessage(code: string | null): string | null {
+  if (!code) return null;
+  switch (code) {
+    case "missing_token":
+      return "We could not complete sign-in. Please try again.";
+    default:
+      return "Sign-in failed. Please try again or contact support if this keeps happening.";
+  }
+}
+
 export default function Login() {
+  const [searchParams] = useSearchParams();
+  const errorMessage = useMemo(
+    () => authErrorMessage(searchParams.get("error")),
+    [searchParams],
+  );
+
   const handleGitHubLogin = () => {
     window.location.href = getGitHubAuthUrl();
   };
@@ -23,7 +41,15 @@ export default function Login() {
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="flex flex-col gap-4">
+          {errorMessage ? (
+            <p
+              className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-center text-sm text-destructive"
+              role="alert"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
           <Button
             onClick={handleGitHubLogin}
             className="w-full"

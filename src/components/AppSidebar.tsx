@@ -1,11 +1,18 @@
-import { Home, Bot, Settings, LogOut, Code, FileCheck, Plug } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Home,
+  Bot,
+  Settings,
+  LogOut,
+  Code,
+  FileCheck,
+  Plug,
+} from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -13,41 +20,45 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarFooter,
-} from '@/components/ui/sidebar';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { clearAuthToken } from '@/lib/auth';
+} from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { clearAuthToken } from "@/lib/auth";
 
 const menuItems = [
   {
-    title: 'Home',
+    title: "Home",
     icon: Home,
-    url: '/',
+    url: "/dashboard",
   },
   {
-    title: 'Agents',
+    title: "Agents",
     icon: Bot,
     items: [
       {
-        title: 'Coder',
+        title: "Coder",
         icon: Code,
-        url: '/agents/coder',
+        url: "/agents/coder",
       },
       {
-        title: 'Reviewer',
+        title: "Reviewer",
         icon: FileCheck,
-        url: '/agents/reviewer',
+        url: "/agents/reviewer",
       },
     ],
   },
   {
-    title: 'Connections',
+    title: "Connections",
     icon: Plug,
-    url: '/connections',
+    url: "/connections",
   },
   {
-    title: 'Settings',
+    title: "Settings",
     icon: Settings,
-    url: '/settings',
+    url: "/settings",
   },
 ];
 
@@ -57,20 +68,23 @@ export function AppSidebar() {
 
   const handleLogout = () => {
     clearAuthToken();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => {
                 if (item.items) {
                   return (
-                    <Collapsible key={item.title} defaultOpen className="group/collapsible">
+                    <Collapsible
+                      key={item.title}
+                      defaultOpen
+                      className="group/collapsible"
+                    >
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton>
@@ -86,10 +100,13 @@ export function AppSidebar() {
                                   asChild
                                   isActive={location.pathname === subItem.url}
                                 >
-                                  <a href={subItem.url} onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(subItem.url);
-                                  }}>
+                                  <a
+                                    href={subItem.url}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      navigate(subItem.url);
+                                    }}
+                                  >
                                     <subItem.icon />
                                     <span>{subItem.title}</span>
                                   </a>
@@ -109,10 +126,13 @@ export function AppSidebar() {
                       asChild
                       isActive={location.pathname === item.url}
                     >
-                      <a href={item.url} onClick={(e) => {
-                        e.preventDefault();
-                        navigate(item.url);
-                      }}>
+                      <a
+                        href={item.url}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(item.url);
+                        }}
+                      >
                         <item.icon />
                         <span>{item.title}</span>
                       </a>
