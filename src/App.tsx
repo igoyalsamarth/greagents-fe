@@ -7,6 +7,7 @@ import GitHubConnectionCallback from "@/pages/GitHubConnectionCallback";
 import Onboarding from "@/pages/Onboarding";
 import Landing from "@/pages/Landing";
 import Pricing from "@/pages/Pricing";
+import PricingSuccess from "@/pages/PricingSuccess";
 import Home from "@/pages/Home";
 import Coder from "@/pages/agents/Coder";
 import Reviewer from "@/pages/agents/Reviewer";
@@ -52,6 +53,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/pricing/success" element={<PricingSuccess />} />
           <Route
             path="/login"
             element={

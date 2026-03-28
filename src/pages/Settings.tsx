@@ -1,10 +1,36 @@
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Building2, Bell } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  billingErrorMessage,
+  createCustomerPortalSession,
+  fetchBillingSubscription,
+} from '@/lib/billing';
+import { User, Building2, Bell, CreditCard, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Settings() {
+  const [portalError, setPortalError] = useState<string | null>(null);
+
+  const billingQuery = useQuery({
+    queryKey: ['billing', 'subscription'],
+    queryFn: fetchBillingSubscription,
+  });
+
+  const portalMutation = useMutation({
+    mutationFn: createCustomerPortalSession,
+    onMutate: () => setPortalError(null),
+    onSuccess: (data) => {
+      window.location.assign(data.portal_url);
+    },
+    onError: async (err) => {
+      setPortalError(await billingErrorMessage(err));
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -58,6 +84,93 @@ export default function Settings() {
               <Input id="orgName" placeholder="Acme Inc." />
             </div>
             <Button>Update Organization</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Billing
+            </CardTitle>
+            <CardDescription>
+              Subscription status from Dodo and a link to manage payment methods
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {billingQuery.isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                Loading billing…
+              </div>
+            ) : billingQuery.isError ? (
+              <p className="text-sm text-destructive">Could not load billing. Try again later.</p>
+            ) : (
+              <>
+                {billingQuery.data?.subscription ? (
+                  <div className="space-y-1 text-sm">
+                    <p>
+                      <span className="text-muted-foreground">Status:</span>{' '}
+                      <span className="font-medium capitalize">
+                        {billingQuery.data.subscription.status.replace(/_/g, ' ')}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">Billing:</span>{' '}
+                      <span className="font-medium">{billingQuery.data.subscription.billing_cycle}</span>
+                      {billingQuery.data.subscription.quantity > 1 ? (
+                        <span className="text-muted-foreground">
+                          {' '}
+                          · {billingQuery.data.subscription.quantity} seats
+                        </span>
+                      ) : null}
+                    </p>
+                    {billingQuery.data.subscription.current_period_end ? (
+                      <p className="text-muted-foreground">
+                        Current period ends{' '}
+                        {new Date(
+                          billingQuery.data.subscription.current_period_end,
+                        ).toLocaleDateString()}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No active Dodo subscription on this organization yet.{' '}
+                    <Link to="/pricing" className="text-primary underline-offset-4 hover:underline">
+                      View pricing
+                    </Link>
+                  </p>
+                )}
+                {portalError ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {portalError}
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={
+                    !billingQuery.data?.dodo_customer_id || portalMutation.isPending
+                  }
+                  onClick={() => portalMutation.mutate()}
+                >
+                  {portalMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                      Opening portal…
+                    </>
+                  ) : (
+                    'Manage subscription in Dodo'
+                  )}
+                </Button>
+                {!billingQuery.data?.dodo_customer_id ? (
+                  <p className="text-xs text-muted-foreground">
+                    The portal unlocks after your first successful checkout (webhook must run).
+                  </p>
+                ) : null}
+              </>
+            )}
           </CardContent>
         </Card>
 

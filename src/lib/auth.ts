@@ -3,8 +3,10 @@
  * Backend redirects to GitHub, then back to /auth/github/callback and finally
  * to the frontend with a session JWT in the `token` query param.
  */
+import { API_BASE_URL } from '@/lib/config';
+
 export const getGitHubAuthUrl = () => {
-  const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const backendUrl = API_BASE_URL;
   const redirectTo = `${window.location.origin}/auth/callback`;
   const params = new URLSearchParams({
     redirect_to: redirectTo,

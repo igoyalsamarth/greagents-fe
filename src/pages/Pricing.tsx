@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +10,8 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { isAuthenticated } from '@/lib/auth';
+import { billingErrorMessage, createBillingCheckoutSession } from '@/lib/billing';
+import type { BillingPlanId } from '@/lib/api';
 import {
   ArrowRight,
   Bot,
@@ -20,7 +23,21 @@ import {
   Stars,
 } from 'lucide-react';
 
-const plans = [
+type PlanBilling =
+  | { kind: 'free' }
+  | { kind: 'paid'; planId: BillingPlanId }
+  | { kind: 'contact' };
+
+const plans: {
+  name: string;
+  price: string;
+  cadence: string;
+  eyebrow: string;
+  description: string;
+  features: string[];
+  featured?: boolean;
+  billing: PlanBilling;
+}[] = [
   {
     name: 'Starter Mischief',
     price: '$0',
@@ -33,6 +50,7 @@ const plans = [
       'Basic issue-to-PR flow',
       'Review summaries with light sass',
     ],
+    billing: { kind: 'free' },
   },
   {
     name: 'Ship Goblin',
@@ -48,6 +66,7 @@ const plans = [
       'Usage and activity visibility',
     ],
     featured: true,
+    billing: { kind: 'paid', planId: 'ship_goblin' },
   },
   {
     name: 'Enterprise Haunting',
@@ -62,11 +81,31 @@ const plans = [
       'Custom rollout support',
       'Contractual peace of mind',
     ],
+    billing: { kind: 'contact' },
   },
 ];
 
 export default function Pricing() {
   const authed = isAuthenticated();
+  const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const salesEmail = import.meta.env.VITE_SALES_EMAIL?.trim();
+
+  const enterpriseMailto = salesEmail
+    ? `mailto:${salesEmail}?subject=${encodeURIComponent('GreAgents Enterprise')}`
+    : null;
+
+  async function startPaidCheckout(planId: BillingPlanId, planName: string) {
+    setCheckoutError(null);
+    setCheckoutPlan(planName);
+    try {
+      const { checkout_url: checkoutUrl } = await createBillingCheckoutSession(planId);
+      window.location.assign(checkoutUrl);
+    } catch (e) {
+      setCheckoutError(await billingErrorMessage(e));
+      setCheckoutPlan(null);
+    }
+  }
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -220,6 +259,15 @@ export default function Pricing() {
               </p>
             </div>
 
+            {checkoutError ? (
+              <p
+                className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                role="alert"
+              >
+                {checkoutError}
+              </p>
+            ) : null}
+
             <div className="grid gap-6 lg:grid-cols-3">
               {plans.map((plan) => (
                 <Card
@@ -263,28 +311,75 @@ export default function Pricing() {
                       ))}
                     </div>
 
-                    {authed ? (
+                    {plan.billing.kind === 'paid' ? (
+                      authed ? (
+                        <Button
+                          type="button"
+                          className="mt-auto w-full"
+                          variant={plan.featured ? 'default' : 'outline'}
+                          disabled={checkoutPlan === plan.name}
+                          onClick={() => {
+                            if (plan.billing.kind !== 'paid') return;
+                            void startPaidCheckout(plan.billing.planId, plan.name);
+                          }}
+                        >
+                          {checkoutPlan === plan.name ? 'Redirecting…' : `Subscribe to ${plan.name}`}
+                          {checkoutPlan === plan.name ? null : (
+                            <ArrowRight data-icon="inline-end" />
+                          )}
+                        </Button>
+                      ) : (
+                        <Button
+                          asChild
+                          className="mt-auto w-full"
+                          variant={plan.featured ? 'default' : 'outline'}
+                        >
+                          <Link to="/login">
+                            Log in to subscribe
+                            <ArrowRight data-icon="inline-end" />
+                          </Link>
+                        </Button>
+                      )
+                    ) : plan.billing.kind === 'free' ? (
+                      authed ? (
+                        <Button
+                          asChild
+                          className="mt-auto w-full"
+                          variant={plan.featured ? 'default' : 'outline'}
+                        >
+                          <Link to="/dashboard">
+                            Continue on free tier
+                            <ArrowRight data-icon="inline-end" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          asChild
+                          className="mt-auto w-full"
+                          variant={plan.featured ? 'default' : 'outline'}
+                        >
+                          <Link to="/login">
+                            Start for free
+                            <ArrowRight data-icon="inline-end" />
+                          </Link>
+                        </Button>
+                      )
+                    ) : enterpriseMailto ? (
                       <Button
                         asChild
                         className="mt-auto w-full"
                         variant={plan.featured ? 'default' : 'outline'}
                       >
-                        <Link to="/dashboard">
-                          Choose {plan.name}
+                        <a href={enterpriseMailto}>
+                          Contact sales
                           <ArrowRight data-icon="inline-end" />
-                        </Link>
+                        </a>
                       </Button>
                     ) : (
-                      <Button
-                        asChild
-                        className="mt-auto w-full"
-                        variant={plan.featured ? 'default' : 'outline'}
-                      >
-                        <Link to="/login">
-                          Choose {plan.name}
-                          <ArrowRight data-icon="inline-end" />
-                        </Link>
-                      </Button>
+                      <p className="mt-auto text-sm text-muted-foreground">
+                        Set <code className="rounded bg-muted px-1 py-0.5 text-xs">VITE_SALES_EMAIL</code> to
+                        enable contact sales.
+                      </p>
                     )}
                   </CardContent>
                 </Card>

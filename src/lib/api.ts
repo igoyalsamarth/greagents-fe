@@ -1,7 +1,9 @@
 import ky from 'ky';
 
+import { API_BASE_URL } from '@/lib/config';
+
 export const api = ky.create({
-  prefixUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  prefixUrl: API_BASE_URL,
   timeout: 30000,
   hooks: {
     beforeRequest: [
@@ -106,4 +108,30 @@ export interface WorkflowUsageRepository {
 export interface WorkflowUsageResponse {
   summary: WorkflowUsageSummary;
   repositories: WorkflowUsageRepository[];
+}
+
+/** Paid plan ids accepted by ``POST /billing/checkout-session``. */
+export type BillingPlanId = 'ship_goblin';
+
+export interface BillingCheckoutSession {
+  checkout_url: string;
+  session_id: string;
+}
+
+export interface BillingSubscriptionInfo {
+  dodo_subscription_id: string;
+  dodo_product_id: string;
+  status: string;
+  billing_cycle: string;
+  quantity: number;
+  current_period_end: string | null;
+}
+
+export interface BillingSubscriptionResponse {
+  dodo_customer_id: string | null;
+  subscription: BillingSubscriptionInfo | null;
+}
+
+export interface CustomerPortalSessionResponse {
+  portal_url: string;
 }
