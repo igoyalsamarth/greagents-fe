@@ -38,7 +38,10 @@ export default function Landing() {
             </span>
             GreAgents
           </Link>
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-4 text-sm">
+            <Link to="/pricing" className="text-muted-foreground transition-colors hover:text-foreground">
+              Pricing
+            </Link>
             {authed ? (
               <Button asChild size="default">
                 <Link to="/dashboard">
@@ -111,6 +114,14 @@ export default function Landing() {
                   asChild
                 >
                   <a href="#agents">Explore agents</a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="h-10 border-border/80 bg-background/40 px-5 text-sm backdrop-blur-sm"
+                  asChild
+                >
+                  <Link to="/pricing">See pricing</Link>
                 </Button>
               </div>
 

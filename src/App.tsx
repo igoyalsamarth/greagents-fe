@@ -6,6 +6,7 @@ import AuthCallback from "@/pages/AuthCallback";
 import GitHubConnectionCallback from "@/pages/GitHubConnectionCallback";
 import Onboarding from "@/pages/Onboarding";
 import Landing from "@/pages/Landing";
+import Pricing from "@/pages/Pricing";
 import Home from "@/pages/Home";
 import Coder from "@/pages/agents/Coder";
 import Reviewer from "@/pages/agents/Reviewer";
@@ -50,6 +51,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route
             path="/login"
             element={
