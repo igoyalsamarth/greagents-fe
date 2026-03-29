@@ -129,6 +129,8 @@ export interface BillingSubscriptionInfo {
 
 export interface BillingSubscriptionResponse {
   dodo_customer_id: string | null;
+  /** Paid + active promo, USD decimal string (matches backend spendable total). */
+  spendable_balance_usd: string;
   subscription: BillingSubscriptionInfo | null;
 }
 

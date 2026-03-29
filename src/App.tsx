@@ -1,4 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { isAuthenticated } from "@/lib/auth";
 import Login from "@/pages/Login";
@@ -13,6 +20,7 @@ import Coder from "@/pages/agents/Coder";
 import Reviewer from "@/pages/agents/Reviewer";
 import Connections from "@/pages/Connections";
 import Settings from "@/pages/Settings";
+import SettingsBilling from "@/pages/SettingsBilling";
 import DashboardLayout from "@/components/DashboardLayout";
 
 const queryClient = new QueryClient({
@@ -46,10 +54,55 @@ function CatchAllRedirect() {
   );
 }
 
+const SITE_NAME = "GreAgents";
+const DEFAULT_TITLE = `${SITE_NAME} — AI agents for your GitHub workflow`;
+
+function documentTitleForPath(pathname: string): string {
+  switch (pathname) {
+    case "/":
+      return DEFAULT_TITLE;
+    case "/pricing":
+      return `Pricing — ${SITE_NAME}`;
+    case "/pricing/success":
+      return `Subscription confirmed — ${SITE_NAME}`;
+    case "/login":
+      return `Log in — ${SITE_NAME}`;
+    case "/dashboard":
+      return `Dashboard — ${SITE_NAME}`;
+    case "/agents/coder":
+      return `Coder agent — ${SITE_NAME}`;
+    case "/agents/reviewer":
+      return `Reviewer agent — ${SITE_NAME}`;
+    case "/connections":
+      return `Connections — ${SITE_NAME}`;
+    case "/settings":
+      return `Settings — ${SITE_NAME}`;
+    case "/settings/billing":
+      return `Wallet & billing — ${SITE_NAME}`;
+    case "/onboarding":
+      return `Onboarding — ${SITE_NAME}`;
+    case "/connections/github/callback":
+      return `Connecting GitHub — ${SITE_NAME}`;
+    case "/auth/callback":
+      return `Signing in — ${SITE_NAME}`;
+    default:
+      return DEFAULT_TITLE;
+  }
+}
+
+function DocumentTitle() {
+  const location = useLocation();
+  useEffect(() => {
+    document.title = documentTitleForPath(location.pathname);
+  }, [location.pathname]);
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <DocumentTitle />
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/pricing" element={<Pricing />} />
@@ -125,6 +178,16 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <Settings />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings/billing"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <SettingsBilling />
                 </DashboardLayout>
               </ProtectedRoute>
             }

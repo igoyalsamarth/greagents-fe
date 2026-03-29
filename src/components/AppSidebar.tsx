@@ -6,6 +6,8 @@ import {
   Code,
   FileCheck,
   Plug,
+  BadgeDollarSign,
+  Wallet,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -54,6 +56,19 @@ const menuItems = [
     title: "Connections",
     icon: Plug,
     url: "/connections",
+  },
+];
+
+const footerNavItems = [
+  {
+    title: "Pricing",
+    icon: BadgeDollarSign,
+    url: "/pricing",
+  },
+  {
+    title: "Wallet",
+    icon: Wallet,
+    url: "/settings/billing",
   },
   {
     title: "Settings",
@@ -146,6 +161,25 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          {footerNavItems.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                asChild
+                isActive={location.pathname === item.url}
+              >
+                <a
+                  href={item.url}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate(item.url);
+                  }}
+                >
+                  <item.icon />
+                  <span>{item.title}</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout}>
               <LogOut />

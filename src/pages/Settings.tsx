@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { WalletTopUpPanel } from '@/components/custom/WalletTopUpPanel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -94,10 +95,22 @@ export default function Settings() {
               Billing
             </CardTitle>
             <CardDescription>
-              Subscription status from Dodo and a link to manage payment methods
+              Wallet balance, top-ups, and Dodo subscription
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm text-muted-foreground">
+                Full wallet page (e.g. after checkout){' '}
+                <Link
+                  to="/settings/billing"
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Wallet & billing
+                </Link>
+              </p>
+            </div>
+            <WalletTopUpPanel />
             {billingQuery.isLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />

@@ -4,9 +4,34 @@ import {
   api,
   type BillingCheckoutSession,
   type BillingPlanId,
+  type BillingSubscriptionInfo,
   type BillingSubscriptionResponse,
   type CustomerPortalSessionResponse,
 } from '@/lib/api';
+
+/**
+ * Subscriptions in these states can start (or retry) checkout; all others use the customer portal.
+ * Aligns with Dodo lifecycle states (e.g. active, on_hold, pending) vs ended or abandoned checkout.
+ */
+const CHECKOUT_ELIGIBLE_STATUSES = new Set([
+  'canceled',
+  'cancelled',
+  'expired',
+  'failed',
+  'incomplete',
+  'incomplete_expired',
+]);
+
+function normalizeSubscriptionStatus(status: string): string {
+  return status.toLowerCase().replace(/\s+/g, '_');
+}
+
+export function shouldOfferPaidPlanCheckout(
+  subscription: BillingSubscriptionInfo | null | undefined,
+): boolean {
+  if (!subscription) return true;
+  return CHECKOUT_ELIGIBLE_STATUSES.has(normalizeSubscriptionStatus(subscription.status));
+}
 
 export async function createBillingCheckoutSession(
   plan: BillingPlanId,
@@ -16,6 +41,15 @@ export async function createBillingCheckoutSession(
 
 export async function fetchBillingSubscription(): Promise<BillingSubscriptionResponse> {
   return api.get('billing/subscription').json();
+}
+
+/** One-time wallet top-up via Dodo hosted checkout (optional product id for multi-SKU top-ups). */
+export async function createTopupCheckoutSession(
+  productId?: string | null,
+): Promise<BillingCheckoutSession> {
+  const body =
+    productId && productId.trim() !== '' ? { product_id: productId.trim() } : {};
+  return api.post('billing/topup-checkout-session', { json: body }).json();
 }
 
 export async function createCustomerPortalSession(): Promise<CustomerPortalSessionResponse> {
