@@ -9,6 +9,9 @@ import {
   type CustomerPortalSessionResponse,
 } from '@/lib/api';
 
+/** Paid plan used by in-app “subscribe” CTAs (matches Ship Goblin on `/pricing`). */
+export const DEFAULT_SUBSCRIPTION_PLAN_ID: BillingPlanId = 'ship_goblin';
+
 /**
  * Subscriptions in these states can start (or retry) checkout; all others use the customer portal.
  * Aligns with Dodo lifecycle states (e.g. active, on_hold, pending) vs ended or abandoned checkout.

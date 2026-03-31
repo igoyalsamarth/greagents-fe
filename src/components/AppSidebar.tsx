@@ -6,7 +6,6 @@ import {
   Code,
   FileCheck,
   Plug,
-  BadgeDollarSign,
   Wallet,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -60,11 +59,6 @@ const menuItems = [
 ];
 
 const footerNavItems = [
-  {
-    title: "Pricing",
-    icon: BadgeDollarSign,
-    url: "/pricing",
-  },
   {
     title: "Wallet",
     icon: Wallet,

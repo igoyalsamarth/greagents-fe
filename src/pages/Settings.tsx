@@ -7,18 +7,37 @@ import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
 import {
   billingErrorMessage,
+  createBillingCheckoutSession,
   createCustomerPortalSession,
+  DEFAULT_SUBSCRIPTION_PLAN_ID,
   fetchBillingSubscription,
+  shouldOfferPaidPlanCheckout,
 } from '@/lib/billing';
 import { User, Building2, Bell, CreditCard, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Settings() {
   const [portalError, setPortalError] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const billingQuery = useQuery({
     queryKey: ['billing', 'subscription'],
     queryFn: fetchBillingSubscription,
+  });
+
+  const offerCheckout = shouldOfferPaidPlanCheckout(
+    billingQuery.data?.subscription,
+  );
+
+  const checkoutMutation = useMutation({
+    mutationFn: () => createBillingCheckoutSession(DEFAULT_SUBSCRIPTION_PLAN_ID),
+    onMutate: () => setCheckoutError(null),
+    onSuccess: (data) => {
+      window.location.assign(data.checkout_url);
+    },
+    onError: async (err) => {
+      setCheckoutError(await billingErrorMessage(err));
+    },
   });
 
   const portalMutation = useMutation({
@@ -118,6 +137,31 @@ export default function Settings() {
               </div>
             ) : billingQuery.isError ? (
               <p className="text-sm text-destructive">Could not load billing. Try again later.</p>
+            ) : offerCheckout ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  No active subscription on this organization. Enable a plan to get started.
+                </p>
+                {checkoutError ? (
+                  <p className="text-sm text-destructive" role="alert">
+                    {checkoutError}
+                  </p>
+                ) : null}
+                <Button
+                  type="button"
+                  disabled={checkoutMutation.isPending}
+                  onClick={() => checkoutMutation.mutate()}
+                >
+                  {checkoutMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                      Redirecting to checkout…
+                    </>
+                  ) : (
+                    'Enable subscription'
+                  )}
+                </Button>
+              </>
             ) : (
               <>
                 {billingQuery.data?.subscription ? (
@@ -147,14 +191,7 @@ export default function Settings() {
                       </p>
                     ) : null}
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No active Dodo subscription on this organization yet.{' '}
-                    <Link to="/pricing" className="text-primary underline-offset-4 hover:underline">
-                      View pricing
-                    </Link>
-                  </p>
-                )}
+                ) : null}
                 {portalError ? (
                   <p className="text-sm text-destructive" role="alert">
                     {portalError}
@@ -179,7 +216,8 @@ export default function Settings() {
                 </Button>
                 {!billingQuery.data?.dodo_customer_id ? (
                   <p className="text-xs text-muted-foreground">
-                    The portal unlocks after your first successful checkout (webhook must run).
+                    If the portal does not open, wait for checkout webhooks to link your customer, or
+                    contact support.
                   </p>
                 ) : null}
               </>

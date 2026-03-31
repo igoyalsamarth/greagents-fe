@@ -110,6 +110,24 @@ export interface WorkflowUsageResponse {
   repositories: WorkflowUsageRepository[];
 }
 
+export interface DashboardRecentActivityItem {
+  workflow: GitHubWorkflowKind;
+  githubFullName: string;
+  itemNumber: number;
+  createdAt: string | null;
+}
+
+export interface DashboardResponse {
+  activeAgentsCount: number;
+  teamMemberCount: number;
+  activityLast24Hours: number;
+  recentActivity: DashboardRecentActivityItem[];
+}
+
+export async function fetchDashboard(): Promise<DashboardResponse> {
+  return api.get('dashboard').json();
+}
+
 /** Paid plan ids accepted by ``POST /billing/checkout-session``. */
 export type BillingPlanId = 'ship_goblin';
 

@@ -42,6 +42,17 @@ function formatDateTime(iso: string | null | undefined): string {
   });
 }
 
+function githubItemUrl(
+  githubFullName: string,
+  workflow: GitHubWorkflowKind,
+  itemNumber: number,
+): string {
+  const base = `https://github.com/${githubFullName}`;
+  return workflow === "review"
+    ? `${base}/pull/${itemNumber}`
+    : `${base}/issues/${itemNumber}`;
+}
+
 const COPY: Record<
   GitHubWorkflowKind,
   {
@@ -239,7 +250,18 @@ export function WorkflowUsagePanel({
                                       className="border-b border-muted/50 last:border-0"
                                     >
                                       <td className="py-2 pr-4 font-medium">
-                                        #{item.itemNumber}
+                                        <a
+                                          href={githubItemUrl(
+                                            repo.githubFullName,
+                                            item.workflow,
+                                            item.itemNumber,
+                                          )}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-primary underline-offset-4 hover:underline"
+                                        >
+                                          #{item.itemNumber}
+                                        </a>
                                       </td>
                                       <td className="py-2 pr-4 tabular-nums">
                                         {formatNumber(item.runCount)}
