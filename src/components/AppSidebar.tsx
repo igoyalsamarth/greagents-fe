@@ -1,7 +1,6 @@
 import {
   Home,
   Bot,
-  Settings,
   LogOut,
   Code,
   FileCheck,
@@ -63,11 +62,6 @@ const footerNavItems = [
     title: "Wallet",
     icon: Wallet,
     url: "/settings/billing",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    url: "/settings",
   },
 ];
 

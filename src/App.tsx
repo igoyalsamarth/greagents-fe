@@ -18,7 +18,6 @@ import Home from "@/pages/Home";
 import Coder from "@/pages/agents/Coder";
 import Reviewer from "@/pages/agents/Reviewer";
 import Connections from "@/pages/Connections";
-import Settings from "@/pages/Settings";
 import SettingsBilling from "@/pages/SettingsBilling";
 import DashboardLayout from "@/components/DashboardLayout";
 
@@ -74,8 +73,6 @@ function documentTitleForPath(pathname: string): string {
       return `Reviewer agent — ${SITE_NAME}`;
     case "/connections":
       return `Connections — ${SITE_NAME}`;
-    case "/settings":
-      return `Settings — ${SITE_NAME}`;
     case "/settings/billing":
       return `Wallet & billing — ${SITE_NAME}`;
     case "/connections/github/callback":
@@ -162,22 +159,20 @@ function App() {
             }
           />
           <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Settings />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/settings/billing"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <SettingsBilling />
                 </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/dashboard" replace />
               </ProtectedRoute>
             }
           />

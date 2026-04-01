@@ -483,7 +483,7 @@ export default function Pricing() {
                             {!billingQuery.data?.dodo_customer_id ? (
                               <p className="text-xs text-muted-foreground">
                                 Billing portal unlocks after checkout completes. If this persists,
-                                try again from Settings.
+                                try again from Wallet & billing.
                               </p>
                             ) : (
                               <p className="text-xs text-muted-foreground">

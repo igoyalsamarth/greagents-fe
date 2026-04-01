@@ -17,23 +17,6 @@ export const api = ky.create({
   },
 });
 
-export interface WorkspaceSummary {
-  id: string;
-  name: string;
-  is_personal: boolean;
-}
-
-/** Current organization (single owner per account). */
-export async function fetchCurrentOrganization(): Promise<WorkspaceSummary> {
-  return api.get('organization').json();
-}
-
-export async function patchOrganizationName(
-  name: string,
-): Promise<{ status: string; name: string }> {
-  return api.patch('organization', { json: { name } }).json();
-}
-
 export interface GitHubAppInstallation {
   id: string;
   installed: boolean;

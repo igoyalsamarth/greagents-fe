@@ -108,7 +108,7 @@ src/
 - `/agents/coder` - Coder agent page (protected)
 - `/agents/reviewer` - Reviewer agent page (protected)
 - `/connections` - GitHub App connection (protected)
-- `/settings` - Settings and workspace members (protected)
+- `/settings/billing` - Wallet and subscription billing (protected)
 
 ## Available Scripts
 

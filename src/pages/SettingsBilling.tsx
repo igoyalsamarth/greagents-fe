@@ -63,9 +63,9 @@ export default function SettingsBilling() {
     <div className="space-y-6">
       <div>
         <Button variant="ghost" size="sm" className="-ml-2 mb-2" asChild>
-          <Link to="/settings" className="gap-1">
+          <Link to="/dashboard" className="gap-1">
             <ArrowLeft className="h-4 w-4" aria-hidden />
-            All settings
+            Back to home
           </Link>
         </Button>
         <h2 className="text-3xl font-bold tracking-tight">Wallet & billing</h2>
