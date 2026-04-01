@@ -60,22 +60,24 @@ export function WorkspaceSwitcher() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-        Loading workspaces…
+      <div className="flex items-center gap-2 text-sm text-sidebar-foreground/70">
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+        <span className="truncate">Loading workspaces…</span>
       </div>
     );
   }
 
   if (!workspaces?.length) {
     return (
-      <p className="text-sm text-muted-foreground">No workspaces found. Try signing in again.</p>
+      <p className="text-sm text-sidebar-foreground/70">
+        No workspaces found. Try signing in again.
+      </p>
     );
   }
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex w-full min-w-0 flex-col gap-2">
         <Select
           value={orgId ?? workspaces[0]?.id}
           onValueChange={(id) => {
@@ -83,7 +85,10 @@ export function WorkspaceSwitcher() {
           }}
           disabled={switchMut.isPending}
         >
-          <SelectTrigger size="sm" className="min-w-[200px] max-w-[280px]">
+          <SelectTrigger
+            size="sm"
+            className="h-9 w-full min-w-0 max-w-none bg-sidebar-accent/50 [&>span]:truncate"
+          >
             <SelectValue placeholder="Workspace">
               {current?.name ?? workspaces[0]?.name}
             </SelectValue>
@@ -99,8 +104,14 @@ export function WorkspaceSwitcher() {
             ))}
           </SelectContent>
         </Select>
-        <Button type="button" variant="outline" size="sm" onClick={() => setSheetOpen(true)}>
-          <Plus className="mr-1 h-4 w-4" aria-hidden />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-9 w-full justify-start border-sidebar-border bg-sidebar-accent/30 hover:bg-sidebar-accent/50"
+          onClick={() => setSheetOpen(true)}
+        >
+          <Plus className="mr-2 h-4 w-4 shrink-0" aria-hidden />
           New workspace
         </Button>
       </div>

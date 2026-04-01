@@ -177,8 +177,8 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Your app username is your GitHub login. Switch workspaces from the selector in the top
-              bar.
+              Your app username is your GitHub login. Switch workspaces from the selector at the top of
+              the sidebar.
             </p>
             {isCreator(role) ? (
               <div className="space-y-2 max-w-md">
