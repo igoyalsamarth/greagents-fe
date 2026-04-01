@@ -5,7 +5,7 @@ A modern React application with GitHub OAuth authentication, built with Vite, Ta
 ## Features
 
 - 🔐 GitHub OAuth authentication
-- 📝 User onboarding flow
+- Workspaces with a top-bar switcher (personal + team)
 - 🎨 Beautiful UI with shadcn/ui components
 - 🚀 Fast development with Vite
 - 📱 Responsive design with TailwindCSS
@@ -81,7 +81,6 @@ src/
 ├── pages/
 │   ├── Login.tsx          # Login landing page
 │   ├── AuthCallback.tsx   # GitHub OAuth callback handler
-│   ├── Onboarding.tsx     # User onboarding form
 │   ├── Home.tsx           # Dashboard home page
 │   ├── Settings.tsx       # Settings page
 │   └── agents/
@@ -98,18 +97,18 @@ src/
 3. GitHub redirects to backend `/auth/github/callback` with a code
 4. Backend processes auth and redirects to frontend `/auth/callback` with token in query params
 5. Frontend extracts and stores token in localStorage
-6. User is redirected to `/onboarding`
-7. After completing onboarding, user is redirected to `/` (home dashboard)
+6. User is redirected to `/dashboard` (session JWT includes the personal workspace)
 
 ## Routes
 
+- `/` - Marketing landing (public)
 - `/login` - Login page (public)
 - `/auth/callback` - OAuth callback handler
-- `/onboarding` - User onboarding form (protected)
-- `/` - Home dashboard (protected)
+- `/dashboard` - Home dashboard (protected)
 - `/agents/coder` - Coder agent page (protected)
 - `/agents/reviewer` - Reviewer agent page (protected)
-- `/settings` - Settings page (protected)
+- `/connections` - GitHub App connection (protected)
+- `/settings` - Settings and workspace members (protected)
 
 ## Available Scripts
 

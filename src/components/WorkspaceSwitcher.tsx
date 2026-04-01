@@ -3,30 +3,34 @@ import { Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { createWorkspace, fetchWorkspaces, switchWorkspace } from '@/lib/api';
 import { getOrgIdFromToken, setAuthToken } from '@/lib/auth';
+
+const NEW_WORKSPACE_VALUE = '__new_workspace__';
 
 export function WorkspaceSwitcher() {
   const queryClient = useQueryClient();
   const orgId = getOrgIdFromToken();
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [newName, setNewName] = useState('');
 
   const { data: workspaces, isLoading } = useQuery({
@@ -51,12 +55,20 @@ export function WorkspaceSwitcher() {
     onSuccess: (token) => {
       setAuthToken(token);
       setNewName('');
-      setSheetOpen(false);
+      setDialogOpen(false);
       void queryClient.invalidateQueries();
     },
   });
 
   const current = workspaces?.find((w) => w.id === orgId);
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setNewName('');
+      createMut.reset();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -77,10 +89,14 @@ export function WorkspaceSwitcher() {
 
   return (
     <>
-      <div className="flex w-full min-w-0 flex-col gap-2">
+      <div className="w-full min-w-0">
         <Select
           value={orgId ?? workspaces[0]?.id}
           onValueChange={(id) => {
+            if (id === NEW_WORKSPACE_VALUE) {
+              setDialogOpen(true);
+              return;
+            }
             if (id && id !== orgId) switchMut.mutate(id);
           }}
           disabled={switchMut.isPending}
@@ -93,39 +109,40 @@ export function WorkspaceSwitcher() {
               {current?.name ?? workspaces[0]?.name}
             </SelectValue>
           </SelectTrigger>
-          <SelectContent>
-            {workspaces.map((w) => (
-              <SelectItem key={w.id} value={w.id}>
-                <span className="truncate">
-                  {w.name}
-                  {w.is_personal ? ' · personal' : ''}
+          <SelectContent position="popper" align="start" className="min-w-[var(--radix-select-trigger-width)]">
+            <SelectGroup>
+              {workspaces.map((w) => (
+                <SelectItem key={w.id} value={w.id}>
+                  <span className="truncate">
+                    {w.name}
+                    {w.is_personal ? ' · personal' : ''}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+            <SelectSeparator />
+            <SelectGroup>
+              <SelectItem value={NEW_WORKSPACE_VALUE} className="[&_svg]:text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Plus className="size-3.5 shrink-0" aria-hidden />
+                  New workspace
                 </span>
               </SelectItem>
-            ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-9 w-full justify-start border-sidebar-border bg-sidebar-accent/30 hover:bg-sidebar-accent/50"
-          onClick={() => setSheetOpen(true)}
-        >
-          <Plus className="mr-2 h-4 w-4 shrink-0" aria-hidden />
-          New workspace
-        </Button>
       </div>
 
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="flex flex-col">
-          <SheetHeader>
-            <SheetTitle>New workspace</SheetTitle>
-            <SheetDescription>
+      <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>New workspace</DialogTitle>
+            <DialogDescription>
               Team workspaces do not include signup promotional credit. You can invite people by
               username after it is created.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-2 px-4">
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="new-workspace-name">Workspace name</Label>
             <Input
               id="new-workspace-name"
@@ -135,12 +152,15 @@ export function WorkspaceSwitcher() {
               autoComplete="off"
             />
           </div>
-          <SheetFooter className="mt-auto">
-            {createMut.isError ? (
-              <p className="text-sm text-destructive" role="alert">
-                Could not create workspace. Check the name and try again.
-              </p>
-            ) : null}
+          {createMut.isError ? (
+            <p className="text-sm text-destructive" role="alert">
+              Could not create workspace. Check the name and try again.
+            </p>
+          ) : null}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => handleDialogOpenChange(false)}>
+              Cancel
+            </Button>
             <Button
               type="button"
               disabled={!newName.trim() || createMut.isPending}
@@ -155,9 +175,9 @@ export function WorkspaceSwitcher() {
                 'Create and switch'
               )}
             </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
