@@ -11,7 +11,6 @@ export default function GitHubConnectionCallback() {
   useEffect(() => {
     const installationId = searchParams.get('installation_id');
     const setupAction = searchParams.get('setup_action');
-    const state = searchParams.get('state');
     const errorParam = searchParams.get('error');
 
     if (errorParam) {
@@ -24,18 +23,12 @@ export default function GitHubConnectionCallback() {
       return;
     }
 
-    if (!state) {
-      navigate('/connections?error=no_workspace_state', { replace: true });
-      return;
-    }
-
     const completeInstallation = async () => {
       try {
         await api.post('connections/github/installation/callback', {
           json: {
             installation_id: Number(installationId),
             setup_action: setupAction,
-            state,
           },
         });
         navigate('/connections?success=true', { replace: true });

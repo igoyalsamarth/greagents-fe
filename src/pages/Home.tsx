@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, AlertCircle, Bot, Loader2, Users } from 'lucide-react';
+import { Activity, AlertCircle, Bot, Loader2 } from 'lucide-react';
 import {
   fetchDashboard,
   type DashboardRecentActivityItem,
@@ -33,12 +33,6 @@ export default function Home() {
         </p>
       </div>
 
-      {data?.workspaceRole === 'user' ? (
-        <p className="text-sm text-muted-foreground rounded-md border bg-muted/30 px-3 py-2">
-          You are a workspace member: activity and usage here are limited to your own runs.
-        </p>
-      ) : null}
-
       {error ? (
         <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
@@ -46,7 +40,7 @@ export default function Home() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
@@ -61,21 +55,6 @@ export default function Home() {
             <p className="text-xs text-muted-foreground">
               Agent types enabled on at least one repository
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-9 w-12" />
-            ) : (
-              <div className="text-2xl font-bold">{data?.teamMemberCount ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground">Members in your organization</p>
           </CardContent>
         </Card>
 

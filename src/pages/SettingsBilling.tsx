@@ -20,14 +20,11 @@ import {
   fetchBillingSubscription,
   shouldOfferPaidPlanCheckout,
 } from '@/lib/billing';
-import { roleAtLeastAdmin, useCurrentWorkspace } from '@/hooks/useCurrentWorkspace';
 
 /**
  * Dedicated billing / wallet page (return target for Dodo top-up checkout).
  */
 export default function SettingsBilling() {
-  const { role } = useCurrentWorkspace();
-  const canBilling = roleAtLeastAdmin(role);
   const [portalError, setPortalError] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -77,7 +74,7 @@ export default function SettingsBilling() {
         </p>
       </div>
 
-      <WalletTopUpPanel allowManage={canBilling} />
+      <WalletTopUpPanel allowManage />
 
       <Card>
         <CardHeader>
@@ -97,7 +94,7 @@ export default function SettingsBilling() {
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               Loading…
             </div>
-          ) : offerCheckout && canBilling ? (
+          ) : offerCheckout ? (
             <>
               <p className="text-sm text-muted-foreground">
                 No active subscription on this organization. Enable a plan to get started.
@@ -122,10 +119,6 @@ export default function SettingsBilling() {
                 )}
               </Button>
             </>
-          ) : offerCheckout && !canBilling ? (
-            <p className="text-sm text-muted-foreground">
-              Ask a workspace admin to enable a subscription for this workspace.
-            </p>
           ) : (
             <>
               <p className="text-sm">
@@ -134,40 +127,32 @@ export default function SettingsBilling() {
                   {billingQuery.data?.subscription?.status.replace(/_/g, ' ') ?? '—'}
                 </span>
               </p>
-              {canBilling ? (
-                <>
-                  {portalError ? (
-                    <p className="text-sm text-destructive" role="alert">
-                      {portalError}
-                    </p>
-                  ) : null}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={!billingQuery.data?.dodo_customer_id || portalMutation.isPending}
-                    onClick={() => portalMutation.mutate()}
-                  >
-                    {portalMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                        Opening portal…
-                      </>
-                    ) : (
-                      'Open Dodo customer portal'
-                    )}
-                  </Button>
-                  {!billingQuery.data?.dodo_customer_id ? (
-                    <p className="text-xs text-muted-foreground">
-                      If the portal does not open, wait for checkout webhooks to link your customer, or
-                      contact support.
-                    </p>
-                  ) : null}
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Subscription management is limited to workspace admins and the creator.
+              {portalError ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {portalError}
                 </p>
-              )}
+              ) : null}
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!billingQuery.data?.dodo_customer_id || portalMutation.isPending}
+                onClick={() => portalMutation.mutate()}
+              >
+                {portalMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                    Opening portal…
+                  </>
+                ) : (
+                  'Open Dodo customer portal'
+                )}
+              </Button>
+              {!billingQuery.data?.dodo_customer_id ? (
+                <p className="text-xs text-muted-foreground">
+                  If the portal does not open, wait for checkout webhooks to link your customer, or
+                  contact support.
+                </p>
+              ) : null}
             </>
           )}
         </CardContent>

@@ -1,27 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { fetchWorkspaces, type WorkspaceRole } from '@/lib/api';
+import { fetchCurrentOrganization } from '@/lib/api';
 import { getOrgIdFromToken } from '@/lib/auth';
 
+/** Loads the current organization from the session JWT (single owner per account). */
 export function useCurrentWorkspace() {
   const orgId = getOrgIdFromToken();
   const q = useQuery({
-    queryKey: ['workspaces'],
-    queryFn: fetchWorkspaces,
+    queryKey: ['organization'],
+    queryFn: fetchCurrentOrganization,
+    enabled: !!orgId,
   });
-  const current = q.data?.find((w) => w.id === orgId);
   return {
     ...q,
     orgId,
-    current,
-    role: current?.role as WorkspaceRole | undefined,
+    current: q.data,
   };
-}
-
-export function roleAtLeastAdmin(role: WorkspaceRole | undefined): boolean {
-  return role === 'creator' || role === 'admin';
-}
-
-export function isCreator(role: WorkspaceRole | undefined): boolean {
-  return role === 'creator';
 }

@@ -14,7 +14,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -23,7 +22,6 @@ import {
   SidebarMenuSubItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { WorkspaceSwitcher } from "@/components/WorkspaceSwitcher";
 import {
   Collapsible,
   CollapsibleContent,
@@ -84,9 +82,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border">
-        <WorkspaceSwitcher />
-      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
