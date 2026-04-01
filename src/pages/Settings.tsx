@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { WalletTopUpPanel } from '@/components/custom/WalletTopUpPanel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,21 +13,78 @@ import {
   fetchBillingSubscription,
   shouldOfferPaidPlanCheckout,
 } from '@/lib/billing';
-import { User, Building2, Bell, CreditCard, Loader2 } from 'lucide-react';
+import {
+  addWorkspaceMember,
+  deleteWorkspace,
+  fetchWorkspaceMembers,
+  fetchWorkspaces,
+  patchWorkspaceName,
+  removeWorkspaceMember,
+  switchWorkspace,
+  type WorkspaceMember,
+  type WorkspaceRole,
+} from '@/lib/api';
+import { setAuthToken } from '@/lib/auth';
+import { getUserIdFromToken } from '@/lib/auth';
+import {
+  isCreator,
+  roleAtLeastAdmin,
+  useCurrentWorkspace,
+} from '@/hooks/useCurrentWorkspace';
+import {
+  Bell,
+  Building2,
+  CreditCard,
+  Loader2,
+  Trash2,
+  UserPlus,
+  Users,
+} from 'lucide-react';
 import { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+function canRemoveMember(actor: WorkspaceRole | undefined, row: WorkspaceMember, selfId: string | null): boolean {
+  if (!actor || row.user_id === selfId) return false;
+  if (row.role === 'creator') return false;
+  if (actor === 'creator') return true;
+  if (actor === 'admin' && row.role === 'user') return true;
+  return false;
+}
 
 export default function Settings() {
+  const queryClient = useQueryClient();
   const [portalError, setPortalError] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [inviteUsername, setInviteUsername] = useState('');
+  const [inviteRole, setInviteRole] = useState<'admin' | 'user'>('user');
+  const [memberError, setMemberError] = useState<string | null>(null);
+
+  const { current, role, orgId } = useCurrentWorkspace();
+  const selfId = getUserIdFromToken();
 
   const billingQuery = useQuery({
     queryKey: ['billing', 'subscription'],
     queryFn: fetchBillingSubscription,
   });
 
+  const membersQuery = useQuery({
+    queryKey: ['workspace-members', orgId],
+    queryFn: () => fetchWorkspaceMembers(orgId!),
+    enabled: !!orgId && roleAtLeastAdmin(role),
+  });
+
   const offerCheckout = shouldOfferPaidPlanCheckout(
     billingQuery.data?.subscription,
   );
+
+  const canBilling = roleAtLeastAdmin(role);
 
   const checkoutMutation = useMutation({
     mutationFn: () => createBillingCheckoutSession(DEFAULT_SUBSCRIPTION_PLAN_ID),
@@ -51,12 +108,58 @@ export default function Settings() {
     },
   });
 
+  const renameMutation = useMutation({
+    mutationFn: () => patchWorkspaceName(orgId!, renameValue.trim()),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      setRenameValue('');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteWorkspace(orgId!),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+      const list = await queryClient.fetchQuery({
+        queryKey: ['workspaces'],
+        queryFn: fetchWorkspaces,
+      });
+      const personal = list.find((w) => w.is_personal);
+      const fallback = personal ?? list[0];
+      if (fallback) {
+        const { token } = await switchWorkspace(fallback.id);
+        setAuthToken(token);
+      }
+      void queryClient.invalidateQueries();
+    },
+  });
+
+  const addMemberMutation = useMutation({
+    mutationFn: () =>
+      addWorkspaceMember(orgId!, { username: inviteUsername.trim(), role: inviteRole }),
+    onMutate: () => setMemberError(null),
+    onSuccess: () => {
+      setInviteUsername('');
+      void membersQuery.refetch();
+    },
+    onError: () => {
+      setMemberError('User not found, already a member, or you lack permission.');
+    },
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: (userId: string) => removeWorkspaceMember(orgId!, userId),
+    onSuccess: () => {
+      void membersQuery.refetch();
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
         <p className="text-muted-foreground">
-          Manage your account and application preferences
+          Workspace preferences, members, and billing for the current workspace.
         </p>
       </div>
 
@@ -64,48 +167,159 @@ export default function Settings() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Settings
+              <Building2 className="h-5 w-5" />
+              Workspace
             </CardTitle>
             <CardDescription>
-              Update your personal information
+              {current?.name ?? '—'}
+              {current?.is_personal ? ' · Personal workspace (cannot be deleted)' : null}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" placeholder="johndoe" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input id="fullName" placeholder="John Doe" />
-            </div>
-            <Button>Save Changes</Button>
+            <p className="text-sm text-muted-foreground">
+              Your app username is your GitHub login. Switch workspaces from the selector in the top
+              bar.
+            </p>
+            {isCreator(role) ? (
+              <div className="space-y-2 max-w-md">
+                <Label htmlFor="rename-ws">Rename workspace</Label>
+                <div className="flex flex-wrap gap-2">
+                  <Input
+                    id="rename-ws"
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    placeholder={current?.name ?? 'Name'}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!renameValue.trim() || renameMutation.isPending}
+                    onClick={() => renameMutation.mutate()}
+                  >
+                    {renameMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    ) : (
+                      'Save name'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+            {isCreator(role) && current && !current.is_personal ? (
+              <div className="border-t pt-4">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={deleteMutation.isPending}
+                  onClick={() => {
+                    if (
+                      confirm(
+                        'Delete this workspace permanently? This cannot be undone.',
+                      )
+                    ) {
+                      deleteMutation.mutate();
+                    }
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+                  {deleteMutation.isPending ? 'Deleting…' : 'Delete workspace'}
+                </Button>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Organization Settings
-            </CardTitle>
-            <CardDescription>
-              Manage your organization details
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="orgName">Organization Name</Label>
-              <Input id="orgName" placeholder="Acme Inc." />
-            </div>
-            <Button>Update Organization</Button>
-          </CardContent>
-        </Card>
+        {roleAtLeastAdmin(role) && orgId ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Members
+              </CardTitle>
+              <CardDescription>
+                Admins can invite by username and remove users. Creators can also remove admins.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="space-y-2 flex-1 min-w-[140px]">
+                  <Label htmlFor="invite-user">GitHub username</Label>
+                  <Input
+                    id="invite-user"
+                    value={inviteUsername}
+                    onChange={(e) => setInviteUsername(e.target.value)}
+                    placeholder="teammate"
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="space-y-2 w-[140px]">
+                  <Label>Role</Label>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={(v) => setInviteRole(v as 'admin' | 'user')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  type="button"
+                  disabled={!inviteUsername.trim() || addMemberMutation.isPending}
+                  onClick={() => addMemberMutation.mutate()}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" aria-hidden />
+                  Add
+                </Button>
+              </div>
+              {memberError ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {memberError}
+                </p>
+              ) : null}
+              {membersQuery.isLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Loading members…
+                </div>
+              ) : membersQuery.data?.length ? (
+                <ul className="divide-y rounded-md border text-sm">
+                  {membersQuery.data.map((m) => (
+                    <li
+                      key={m.user_id}
+                      className="flex flex-wrap items-center justify-between gap-2 px-3 py-2"
+                    >
+                      <span className="font-medium">@{m.username}</span>
+                      <span className="text-muted-foreground capitalize">{m.role}</span>
+                      {canRemoveMember(role, m, selfId) ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive"
+                          disabled={removeMemberMutation.isPending}
+                          onClick={() => {
+                            if (confirm(`Remove @${m.username} from this workspace?`)) {
+                              removeMemberMutation.mutate(m.user_id);
+                            }
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">No members loaded.</p>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card>
           <CardHeader>
@@ -120,7 +334,7 @@ export default function Settings() {
           <CardContent className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-muted-foreground">
-                Full wallet page (e.g. after checkout){' '}
+                Full wallet page{' '}
                 <Link
                   to="/settings/billing"
                   className="text-primary underline-offset-4 hover:underline"
@@ -129,7 +343,7 @@ export default function Settings() {
                 </Link>
               </p>
             </div>
-            <WalletTopUpPanel />
+            <WalletTopUpPanel allowManage={canBilling} />
             {billingQuery.isLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -137,10 +351,10 @@ export default function Settings() {
               </div>
             ) : billingQuery.isError ? (
               <p className="text-sm text-destructive">Could not load billing. Try again later.</p>
-            ) : offerCheckout ? (
+            ) : offerCheckout && canBilling ? (
               <>
                 <p className="text-sm text-muted-foreground">
-                  No active subscription on this organization. Enable a plan to get started.
+                  No active subscription on this workspace. Enable a plan to get started.
                 </p>
                 {checkoutError ? (
                   <p className="text-sm text-destructive" role="alert">
@@ -162,6 +376,10 @@ export default function Settings() {
                   )}
                 </Button>
               </>
+            ) : offerCheckout && !canBilling ? (
+              <p className="text-sm text-muted-foreground">
+                Ask a workspace admin to enable a subscription for this workspace.
+              </p>
             ) : (
               <>
                 {billingQuery.data?.subscription ? (
@@ -192,34 +410,42 @@ export default function Settings() {
                     ) : null}
                   </div>
                 ) : null}
-                {portalError ? (
-                  <p className="text-sm text-destructive" role="alert">
-                    {portalError}
+                {canBilling ? (
+                  <>
+                    {portalError ? (
+                      <p className="text-sm text-destructive" role="alert">
+                        {portalError}
+                      </p>
+                    ) : null}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={
+                        !billingQuery.data?.dodo_customer_id || portalMutation.isPending
+                      }
+                      onClick={() => portalMutation.mutate()}
+                    >
+                      {portalMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                          Opening portal…
+                        </>
+                      ) : (
+                        'Manage subscription in Dodo'
+                      )}
+                    </Button>
+                    {!billingQuery.data?.dodo_customer_id ? (
+                      <p className="text-xs text-muted-foreground">
+                        If the portal does not open, wait for checkout webhooks to link your customer,
+                        or contact support.
+                      </p>
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Subscription management is limited to workspace admins and the creator.
                   </p>
-                ) : null}
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={
-                    !billingQuery.data?.dodo_customer_id || portalMutation.isPending
-                  }
-                  onClick={() => portalMutation.mutate()}
-                >
-                  {portalMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                      Opening portal…
-                    </>
-                  ) : (
-                    'Manage subscription in Dodo'
-                  )}
-                </Button>
-                {!billingQuery.data?.dodo_customer_id ? (
-                  <p className="text-xs text-muted-foreground">
-                    If the portal does not open, wait for checkout webhooks to link your customer, or
-                    contact support.
-                  </p>
-                ) : null}
+                )}
               </>
             )}
           </CardContent>

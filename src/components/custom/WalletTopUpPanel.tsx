@@ -36,6 +36,8 @@ export type WalletTopUpPanelProps = {
   productId?: string;
   /** Secondary line under the title. */
   description?: string;
+  /** Workspace admins and creators can top up; members with the user role cannot. */
+  allowManage?: boolean;
 };
 
 /**
@@ -44,6 +46,7 @@ export type WalletTopUpPanelProps = {
 export function WalletTopUpPanel({
   productId,
   description = 'Usage is charged from this balance after each agent run. Subscriptions and top-ups add funds here.',
+  allowManage = true,
 }: WalletTopUpPanelProps) {
   const [topupError, setTopupError] = useState<string | null>(null);
 
@@ -100,20 +103,26 @@ export function WalletTopUpPanel({
           )}
         </div>
 
-        <Button
-          type="button"
-          disabled={billingQuery.isLoading || billingQuery.isError || topupMutation.isPending}
-          onClick={() => topupMutation.mutate()}
-        >
-          {topupMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-              Redirecting…
-            </>
-          ) : (
-            'Add funds'
-          )}
-        </Button>
+        {allowManage ? (
+          <Button
+            type="button"
+            disabled={billingQuery.isLoading || billingQuery.isError || topupMutation.isPending}
+            onClick={() => topupMutation.mutate()}
+          >
+            {topupMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                Redirecting…
+              </>
+            ) : (
+              'Add funds'
+            )}
+          </Button>
+        ) : (
+          <p className="text-sm text-muted-foreground max-w-xs text-right">
+            Only workspace admins or the creator can add funds.
+          </p>
+        )}
       </div>
 
       {lowBalance ? (

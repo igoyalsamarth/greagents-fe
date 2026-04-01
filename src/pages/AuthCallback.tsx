@@ -17,7 +17,7 @@ export default function AuthCallback() {
 
     if (sessionToken) {
       setAuthToken(sessionToken);
-      navigate("/onboarding");
+      navigate("/dashboard");
     } else {
       navigate("/login?error=" + encodeURIComponent("missing_token"));
     }

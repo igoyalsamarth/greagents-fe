@@ -33,10 +33,13 @@ import {
 } from "@/lib/api";
 import { Link } from "react-router-dom";
 import { WorkflowUsagePanel } from "@/components/WorkflowUsagePanel";
+import { roleAtLeastAdmin, useCurrentWorkspace } from "@/hooks/useCurrentWorkspace";
 
 export default function Reviewer() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const { role } = useCurrentWorkspace();
+  const canConfigure = roleAtLeastAdmin(role);
 
   const {
     data: settings,
@@ -136,6 +139,16 @@ export default function Reviewer() {
           label always starts another run.
         </p>
       </div>
+
+      {!canConfigure ? (
+        <div
+          className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100"
+          role="status"
+        >
+          You have read-only access. Usage stats below show your own runs; only workspace admins and
+          the creator can change agent settings.
+        </div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -285,7 +298,7 @@ export default function Reviewer() {
                           onValueChange={(value: RepoAgentMode) =>
                             handleModeChange(repo.id, value)
                           }
-                          disabled={!config.enabled || isUpdating}
+                          disabled={!canConfigure || !config.enabled || isUpdating}
                         >
                           <SelectTrigger className="w-35 h-9">
                             <SelectValue />
@@ -305,6 +318,7 @@ export default function Reviewer() {
                         ) : (
                           <Switch
                             checked={config.enabled}
+                            disabled={!canConfigure}
                             onCheckedChange={(checked) =>
                               handleToggle(repo.id, checked)
                             }

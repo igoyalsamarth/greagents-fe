@@ -17,11 +17,64 @@ export const api = ky.create({
   },
 });
 
-export interface OnboardingData {
-  organization: string;
+export type WorkspaceRole = 'creator' | 'admin' | 'user';
+
+export interface WorkspaceSummary {
+  id: string;
+  name: string;
+  is_personal: boolean;
+  role: WorkspaceRole;
+}
+
+export interface WorkspaceMember {
+  user_id: string;
   username: string;
-  fullName?: string;
-  bio?: string;
+  role: WorkspaceRole;
+}
+
+export async function fetchWorkspaces(): Promise<WorkspaceSummary[]> {
+  return api.get('workspaces').json();
+}
+
+export async function createWorkspace(name: string): Promise<WorkspaceSummary> {
+  return api.post('workspaces', { json: { name } }).json();
+}
+
+export async function switchWorkspace(workspaceId: string): Promise<{ token: string }> {
+  return api
+    .post('workspaces/switch', { json: { workspace_id: workspaceId } })
+    .json();
+}
+
+export async function patchWorkspaceName(
+  workspaceId: string,
+  name: string,
+): Promise<{ status: string; name: string }> {
+  return api.patch(`workspaces/${workspaceId}`, { json: { name } }).json();
+}
+
+export async function deleteWorkspace(workspaceId: string): Promise<{ status: string }> {
+  return api.delete(`workspaces/${workspaceId}`).json();
+}
+
+export async function fetchWorkspaceMembers(
+  workspaceId: string,
+): Promise<WorkspaceMember[]> {
+  return api.get(`workspaces/${workspaceId}/members`).json();
+}
+
+export async function addWorkspaceMember(
+  workspaceId: string,
+  body: { username: string; role: 'admin' | 'user' },
+): Promise<WorkspaceMember> {
+  return api.post(`workspaces/${workspaceId}/members`, { json: body }).json();
+}
+
+export async function removeWorkspaceMember(
+  workspaceId: string,
+  memberUserId: string,
+): Promise<{ status: string }> {
+  return api.delete(`workspaces/${workspaceId}/members/${memberUserId}`).json();
 }
 
 export interface GitHubAppInstallation {
@@ -122,6 +175,7 @@ export interface DashboardResponse {
   teamMemberCount: number;
   activityLast24Hours: number;
   recentActivity: DashboardRecentActivityItem[];
+  workspaceRole: WorkspaceRole;
 }
 
 export async function fetchDashboard(): Promise<DashboardResponse> {

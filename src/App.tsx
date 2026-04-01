@@ -11,7 +11,6 @@ import { isAuthenticated } from "@/lib/auth";
 import Login from "@/pages/Login";
 import AuthCallback from "@/pages/AuthCallback";
 import GitHubConnectionCallback from "@/pages/GitHubConnectionCallback";
-import Onboarding from "@/pages/Onboarding";
 import Landing from "@/pages/Landing";
 import Pricing from "@/pages/Pricing";
 import PricingSuccess from "@/pages/PricingSuccess";
@@ -79,8 +78,6 @@ function documentTitleForPath(pathname: string): string {
       return `Settings — ${SITE_NAME}`;
     case "/settings/billing":
       return `Wallet & billing — ${SITE_NAME}`;
-    case "/onboarding":
-      return `Onboarding — ${SITE_NAME}`;
     case "/connections/github/callback":
       return `Connecting GitHub — ${SITE_NAME}`;
     case "/auth/callback":
@@ -121,14 +118,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <GitHubConnectionCallback />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedRoute>
-                <Onboarding />
               </ProtectedRoute>
             }
           />

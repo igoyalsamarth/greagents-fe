@@ -29,3 +29,28 @@ export const clearAuthToken = () => {
 export const isAuthenticated = () => {
   return !!getAuthToken();
 };
+
+function readJwtPayload(): { sub?: string; org_id?: string } | null {
+  const t = getAuthToken();
+  if (!t) return null;
+  const parts = t.split('.');
+  if (parts.length < 2) return null;
+  try {
+    const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+    const json = atob(padded);
+    return JSON.parse(json) as { sub?: string; org_id?: string };
+  } catch {
+    return null;
+  }
+}
+
+/** Read ``org_id`` from the session JWT payload (UI only; not verified). */
+export function getOrgIdFromToken(): string | null {
+  return readJwtPayload()?.org_id ?? null;
+}
+
+/** Read ``sub`` (user id) from the session JWT payload (UI only; not verified). */
+export function getUserIdFromToken(): string | null {
+  return readJwtPayload()?.sub ?? null;
+}

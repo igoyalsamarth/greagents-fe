@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Github, CheckCircle2, Loader2, Settings2, Lock } from 'lucide-react';
 import { api, type GitHubAppInstallation, type GitHubAppInstallationResponse } from '@/lib/api';
 import { useSearchParams } from 'react-router-dom';
+import { roleAtLeastAdmin, useCurrentWorkspace } from '@/hooks/useCurrentWorkspace';
 
 export default function Connections() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [isInstalling, setIsInstalling] = useState(false);
+  const { role } = useCurrentWorkspace();
+  const canManageGitHub = roleAtLeastAdmin(role);
 
   const { data: githubApp, isLoading } = useQuery<GitHubAppInstallation>({
     queryKey: ['github-app-installation'],
@@ -49,6 +52,11 @@ export default function Connections() {
       setSearchParams({});
     } else if (error) {
       setIsInstalling(false);
+      if (error === 'no_workspace_state') {
+        console.warn(
+          'GitHub did not return workspace state. Re-install from Connections so the link includes your current workspace.',
+        );
+      }
       setSearchParams({});
     }
   }, [searchParams, queryClient, setSearchParams]);
@@ -59,10 +67,11 @@ export default function Connections() {
   };
 
   const handleConfigure = () => {
-    if (githubApp?.accountLogin) {
-      const appSlug = import.meta.env.VITE_GITHUB_APP_SLUG || 'your-app-slug';
-      window.open(`https://github.com/apps/${appSlug}/installations/new`, '_blank');
-    }
+    installMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        window.open(data.installUrl, '_blank', 'noopener,noreferrer');
+      },
+    });
   };
 
   const handleUninstall = () => {
@@ -114,28 +123,31 @@ export default function Connections() {
                     <Button
                       variant="outline"
                       onClick={handleConfigure}
+                      disabled={installMutation.isPending}
                       size="sm"
                     >
                       <Settings2 className="h-4 w-4 mr-2" />
                       Configure
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleUninstall}
-                      disabled={uninstallMutation.isPending}
-                      size="sm"
-                    >
-                      {uninstallMutation.isPending ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Uninstalling...
-                        </>
-                      ) : (
-                        'Uninstall'
-                      )}
-                    </Button>
+                    {canManageGitHub ? (
+                      <Button
+                        variant="outline"
+                        onClick={handleUninstall}
+                        disabled={uninstallMutation.isPending}
+                        size="sm"
+                      >
+                        {uninstallMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Uninstalling...
+                          </>
+                        ) : (
+                          'Uninstall'
+                        )}
+                      </Button>
+                    ) : null}
                   </>
-                ) : (
+                ) : canManageGitHub ? (
                   <Button
                     onClick={handleInstall}
                     disabled={isInstalling || installMutation.isPending}
@@ -149,6 +161,10 @@ export default function Connections() {
                       'Install App'
                     )}
                   </Button>
+                ) : (
+                  <p className="text-sm text-muted-foreground max-w-xs text-right">
+                    Ask a workspace admin to install the GitHub App.
+                  </p>
                 )}
               </div>
             </div>

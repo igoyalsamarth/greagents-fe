@@ -33,6 +33,12 @@ export default function Home() {
         </p>
       </div>
 
+      {data?.workspaceRole === 'user' ? (
+        <p className="text-sm text-muted-foreground rounded-md border bg-muted/30 px-3 py-2">
+          You are a workspace member: activity and usage here are limited to your own runs.
+        </p>
+      ) : null}
+
       {error ? (
         <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
