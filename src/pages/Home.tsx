@@ -12,6 +12,7 @@ import {
   fetchDashboard,
   type DashboardRecentActivityItem,
 } from '@/lib/api';
+import { GitHubConnectionBanner } from '@/components/custom/GitHubConnectionBanner';
 
 function activitySummaryLine(item: DashboardRecentActivityItem): string {
   const kind = item.workflow === 'code' ? 'Issue' : 'PR';
@@ -32,6 +33,8 @@ export default function Home() {
           Welcome back! Here&apos;s an overview of your workspace.
         </p>
       </div>
+
+      <GitHubConnectionBanner />
 
       {error ? (
         <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">

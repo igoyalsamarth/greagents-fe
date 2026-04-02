@@ -3,7 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Github, CheckCircle2, Loader2, Settings2, Lock } from 'lucide-react';
-import { api, type GitHubAppInstallation, type GitHubAppInstallationResponse } from '@/lib/api';
+import {
+  api,
+  fetchGitHubAppInstallation,
+  type GitHubAppInstallation,
+  type GitHubAppInstallationResponse,
+} from '@/lib/api';
 import { useSearchParams } from 'react-router-dom';
 export default function Connections() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,10 +17,7 @@ export default function Connections() {
 
   const { data: githubApp, isLoading } = useQuery<GitHubAppInstallation>({
     queryKey: ['github-app-installation'],
-    queryFn: async () => {
-      const response = await api.get('connections/github/installation').json<GitHubAppInstallation>();
-      return response;
-    },
+    queryFn: fetchGitHubAppInstallation,
   });
 
   const installMutation = useMutation({

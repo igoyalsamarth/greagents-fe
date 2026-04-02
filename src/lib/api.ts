@@ -37,6 +37,10 @@ export interface GitHubAppInstallationResponse {
   installUrl: string;
 }
 
+export async function fetchGitHubAppInstallation(): Promise<GitHubAppInstallation> {
+  return api.get('connections/github/installation').json();
+}
+
 export interface Repository {
   id: number;
   name: string;

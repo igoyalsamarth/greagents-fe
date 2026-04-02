@@ -32,6 +32,7 @@ import {
   type RepoAgentMode,
 } from "@/lib/api";
 import { Link } from "react-router-dom";
+import { GitHubConnectionBanner } from "@/components/custom/GitHubConnectionBanner";
 import { WorkflowUsagePanel } from "@/components/WorkflowUsagePanel";
 export default function Reviewer() {
   const queryClient = useQueryClient();
@@ -97,6 +98,7 @@ export default function Reviewer() {
             AI-powered pull request reviews for your repositories
           </p>
         </div>
+        <GitHubConnectionBanner />
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center text-center space-y-4 py-8">
@@ -106,13 +108,20 @@ export default function Reviewer() {
                   Unable to load repositories
                 </h3>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Please connect your GitHub App to enable the Reviewer Agent.
+                  Open{' '}
+                  <Link
+                    to="/connections"
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Connections
+                  </Link>{' '}
+                  to install the GreAgents GitHub App, then try again.
                 </p>
               </div>
               <Button asChild>
                 <Link to="/connections">
                   <Github className="mr-2 h-4 w-4" />
-                  Connect GitHub
+                  Go to Connections
                 </Link>
               </Button>
             </div>
@@ -135,6 +144,8 @@ export default function Reviewer() {
           label always starts another run.
         </p>
       </div>
+
+      <GitHubConnectionBanner />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
