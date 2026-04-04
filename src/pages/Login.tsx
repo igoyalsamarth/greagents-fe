@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AppBrandLink } from "@/components/AppBrandMark";
 import { getGitHubAuthUrl } from "@/lib/auth";
 import { Github } from "lucide-react";
 
@@ -33,7 +34,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-8 bg-linear-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <AppBrandLink to="/" className="text-foreground" />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold">Welcome</CardTitle>

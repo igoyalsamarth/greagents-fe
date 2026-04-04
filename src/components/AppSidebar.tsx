@@ -7,20 +7,22 @@ import {
   Plug,
   Wallet,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
+import { APP_LOGO_SRC } from "@/components/AppBrandMark";
 import {
   Collapsible,
   CollapsibleContent,
@@ -76,6 +78,21 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
+      <SidebarHeader className="border-b border-sidebar-border">
+        <Link
+          to="/dashboard"
+          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-semibold tracking-tight text-sidebar-foreground outline-hidden ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2"
+        >
+          <img
+            src={APP_LOGO_SRC}
+            alt=""
+            width={32}
+            height={32}
+            className="size-8 shrink-0 rounded-md object-contain"
+          />
+          <span>GreAgents</span>
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>

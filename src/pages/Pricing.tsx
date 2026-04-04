@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { AppBrandLink } from '@/components/AppBrandMark';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,7 +23,6 @@ import {
 import type { BillingPlanId } from '@/lib/api';
 import {
   ArrowRight,
-  Bot,
   Check,
   CircleDollarSign,
   Rocket,
@@ -180,15 +180,7 @@ export default function Pricing() {
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <header className="sticky top-0 z-50 border-b border-border/80 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-6">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground"
-          >
-            <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Bot className="size-4" aria-hidden />
-            </span>
-            GreAgents
-          </Link>
+          <AppBrandLink to="/" />
 
           <nav className="flex items-center gap-4 text-sm">
             <Link to="/" className="text-muted-foreground transition-colors hover:text-foreground">
